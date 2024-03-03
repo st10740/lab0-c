@@ -235,12 +235,42 @@ void q_reverseK(struct list_head *head, int k)
 /* Sort elements of queue in ascending/descending order */
 void q_sort(struct list_head *head, bool descend) {}
 
+/* Implement the common parts of q_asecnd and q_descend */
+int q_descend_or_ascend(struct list_head *head, bool descend)
+{
+    if (!head || list_empty(head))
+        return 0;
+
+    int num = 0;
+    struct list_head *cur = head->prev, *prev = cur->prev;
+    while (prev != head) {
+        num++;
+        bool del_prev =
+            descend ? (strcmp(list_entry(prev, element_t, list)->value,
+                              list_entry(cur, element_t, list)->value) < 0)
+                    : (strcmp(list_entry(prev, element_t, list)->value,
+                              list_entry(cur, element_t, list)->value) > 0);
+        if (del_prev) {
+            struct list_head *tmp = prev;
+            prev = prev->prev;
+            list_del(tmp);
+            num--;
+        } else {
+            cur = prev;
+            prev = prev->prev;
+        }
+    }
+    num++;
+    return num;
+}
+
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
 int q_ascend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+
+    return q_descend_or_ascend(head, false);
 }
 
 /* Remove every node which has a node with a strictly greater value anywhere to
@@ -248,7 +278,8 @@ int q_ascend(struct list_head *head)
 int q_descend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+
+    return q_descend_or_ascend(head, true);
 }
 
 /* Merge all the queues into one sorted queue, which is in ascending/descending
