@@ -102,10 +102,29 @@ int q_size(struct list_head *head)
     return len;
 }
 
+/* Delete a node in queue */
+void q_delete_element(struct list_head *l)
+{
+    list_del(l);
+    element_t *entry = list_entry(l, element_t, list);
+    free(entry->value);
+    free(entry);
+}
+
 /* Delete the middle node in queue */
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+
+    if (!head || list_empty(head))
+        return false;
+
+    struct list_head *slow, *fast;
+    for (slow = head->next, fast = head->next;
+         fast != head && fast->next != head; fast = fast->next->next) {
+        slow = slow->next;
+    }
+    q_delete_element(slow);
     return true;
 }
 
