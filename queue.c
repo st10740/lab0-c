@@ -232,8 +232,53 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
+/* Merge two sorted queue */
+void q_merge_two_lists(struct list_head *merged_head,
+                       struct list_head *left_head,
+                       struct list_head *right_head,
+                       bool descend)
+{
+    while (!list_empty(left_head) && !list_empty(right_head)) {
+        char *left_value = list_entry(left_head->next, element_t, list)->value;
+        char *right_value =
+            list_entry(right_head->next, element_t, list)->value;
+        if ((descend && strcmp(left_value, right_value) >= 0) ||
+            (!descend && strcmp(left_value, right_value) <= 0)) {
+            list_move_tail(left_head->next, merged_head);
+        } else {
+            list_move_tail(right_head->next, merged_head);
+        }
+    }
+    if (!list_empty(left_head)) {
+        list_splice_tail(left_head, merged_head);
+    } else {
+        list_splice_tail(right_head, merged_head);
+    }
+}
+
 /* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend) {}
+void q_sort(struct list_head *head, bool descend)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+
+    struct list_head *slow, *fast;
+    for (slow = head->next, fast = slow; fast != head && fast->next != head;
+         fast = fast->next->next) {
+        slow = slow->next;
+    }
+    struct list_head *mid_prev = slow->prev;
+
+    LIST_HEAD(left_head);
+    LIST_HEAD(right_head);
+    list_cut_position(&left_head, head, mid_prev);
+    list_splice(head, &right_head);
+    INIT_LIST_HEAD(head);
+
+    q_sort(&left_head, descend);
+    q_sort(&right_head, descend);
+    q_merge_two_lists(head, &left_head, &right_head, descend);
+}
 
 /* Implement the common parts of q_asecnd and q_descend */
 int q_descend_or_ascend(struct list_head *head, bool descend)
