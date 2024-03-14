@@ -250,9 +250,9 @@ void q_merge_two_lists(struct list_head *merged_head,
         }
     }
     if (!list_empty(left_head)) {
-        list_splice_tail(left_head, merged_head);
+        list_splice_tail_init(left_head, merged_head);
     } else {
-        list_splice_tail(right_head, merged_head);
+        list_splice_tail_init(right_head, merged_head);
     }
 }
 
@@ -332,5 +332,29 @@ int q_descend(struct list_head *head)
 int q_merge(struct list_head *head, bool descend)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
-    return 0;
+
+    if (!head || list_empty(head))
+        return 0;
+
+    int chain_size = q_size(head);
+    struct list_head *first = head->next, *second = head->prev;
+
+    while (chain_size > 1) {
+        for (;; first = first->next, second = second->prev) {
+            if (first == second || first->prev == second) {
+                first = head->next;
+                break;
+            }
+            LIST_HEAD(merged_head);
+            struct list_head *first_q =
+                list_entry(first, queue_contex_t, chain)->q;
+            struct list_head *second_q =
+                list_entry(second, queue_contex_t, chain)->q;
+            q_merge_two_lists(&merged_head, first_q, second_q, descend);
+            list_splice_init(&merged_head, first_q);
+        }
+        chain_size = (chain_size + 1) / 2;
+    }
+
+    return q_size(list_entry(head->next, queue_contex_t, chain)->q);
 }
