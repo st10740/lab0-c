@@ -300,6 +300,9 @@ int q_descend_or_ascend(struct list_head *head, bool descend)
             struct list_head *tmp = prev;
             prev = prev->prev;
             list_del(tmp);
+            element_t *tmp_ele = list_entry(tmp, element_t, list);
+            free(tmp_ele->value);
+            free(tmp_ele);
             num--;
         } else {
             cur = prev;
