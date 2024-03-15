@@ -148,7 +148,9 @@ bool q_delete_dup(struct list_head *head)
             cur = cur->next;
         }
         if (prev->next != cur) {
-            list_cut_position(del_q, prev->prev, cur->prev);
+            LIST_HEAD(tmp_del);
+            list_cut_position(&tmp_del, prev->prev, cur->prev);
+            list_splice(&tmp_del, del_q);
         }
     }
     q_free(del_q);
