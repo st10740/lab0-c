@@ -73,7 +73,8 @@ element_t *q_remove(struct list_head *head,
     element_t *removed_ele = list_entry(removed, element_t, list);
     list_del(&removed_ele->list);
     if (sp) {
-        strncpy(sp, removed_ele->value, bufsize);
+        strncpy(sp, removed_ele->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
     }
     return removed_ele;
 }
