@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "list_sort.h"
 #include "queue.h"
+
+#define lsort 1
 
 /* Notice: sometimes, Cppcheck would find the potential NULL pointer bugs,
  * but some of them cannot occur. You can suppress them by adding the
@@ -260,8 +263,8 @@ void q_merge_two_lists(struct list_head *merged_head,
     }
 }
 
-/* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend)
+/* Sort elements of queue in ascending/descending order using Merge sort */
+void merge_sort(struct list_head *head, bool descend)
 {
     if (!head || list_empty(head) || list_is_singular(head))
         return;
@@ -282,6 +285,24 @@ void q_sort(struct list_head *head, bool descend)
     q_sort(&left_head, descend);
     q_sort(&right_head, descend);
     q_merge_two_lists(head, &left_head, &right_head, descend);
+}
+
+int cmp(void *priv, const struct list_head *a, const struct list_head *b)
+{
+    bool descend = *(bool *) priv;
+    char *a_val = list_entry(a, element_t, list)->value;
+    char *b_val = list_entry(b, element_t, list)->value;
+    return descend ? strcmp(b_val, a_val) : strcmp(a_val, b_val);
+}
+
+/* Sort elements of queue in ascending/descending order */
+void q_sort(struct list_head *head, bool descend)
+{
+#if (lsort == 1)
+    list_sort(&descend, head, cmp);
+#else
+    merge_sort(head, descend);
+#endif
 }
 
 /* Implement the common parts of q_asecnd and q_descend */
