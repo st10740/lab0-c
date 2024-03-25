@@ -31,8 +31,7 @@ void q_free(struct list_head *head)
         return;
     element_t *item, *tmp;
     list_for_each_entry_safe (item, tmp, head, list) {
-        free(item->value);
-        free(item);
+        q_release_element(item);
     }
     free(head);
 }
@@ -108,15 +107,6 @@ int q_size(struct list_head *head)
     return len;
 }
 
-/* Delete a node in queue */
-void q_delete_element(struct list_head *l)
-{
-    list_del(l);
-    element_t *entry = list_entry(l, element_t, list);
-    free(entry->value);
-    free(entry);
-}
-
 /* Delete the middle node in queue */
 bool q_delete_mid(struct list_head *head)
 {
@@ -130,7 +120,8 @@ bool q_delete_mid(struct list_head *head)
          fast != head && fast->next != head; fast = fast->next->next) {
         slow = slow->next;
     }
-    q_delete_element(slow);
+    list_del(slow);
+    q_release_element(list_entry(slow, element_t, list));
     return true;
 }
 
@@ -150,13 +141,11 @@ bool q_delete_dup(struct list_head *head)
         if (&cur->list != head && strcmp(prev->value, cur->value) == 0) {
             dup = true;
             list_del(&prev->list);
-            free(prev->value);
-            free(prev);
+            q_release_element(prev);
         } else if (dup) {
             dup = false;
             list_del(&prev->list);
-            free(prev->value);
-            free(prev);
+            q_release_element(prev);
         }
     }
     return true;
@@ -324,9 +313,7 @@ int q_descend_or_ascend(struct list_head *head, bool descend)
             struct list_head *tmp = prev;
             prev = prev->prev;
             list_del(tmp);
-            element_t *tmp_ele = list_entry(tmp, element_t, list);
-            free(tmp_ele->value);
-            free(tmp_ele);
+            q_release_element(list_entry(tmp, element_t, list));
             num--;
         } else {
             cur = prev;
